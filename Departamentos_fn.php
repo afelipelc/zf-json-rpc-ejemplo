@@ -77,7 +77,7 @@ class Departamentos
 	function RegistrarDepartamento($nombre, $responsable, $cargoResp, $fotoResp, $email, $telefono, $infoAd){
 		if($nombre && $responsable && $telefono)
 		{		
-			$sql = "INSERT into departamentos(nombre, responsable, cargoResponsable, fotoResponsable, email, telefono, informacion) values('$nombre','$responsable', '$cargoResp',$fotoResp,'$email','$telefono', '$infoAd')";
+			$sql = "INSERT into departamentos(nombre, responsable, cargoResp, fotoResp, email, telefono, informacion) values('$nombre','$responsable', '$cargoResp',$fotoResp,'$email','$telefono', '$infoAd')";
 			$this->db->query($sql, Adapter::QUERY_MODE_EXECUTE);
 			$id = $this->db->getDriver()->getLastGeneratedValue();
 
