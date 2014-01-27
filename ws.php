@@ -1,4 +1,11 @@
 <?php
+    header('Access-Control-Allow-Origin: *');  //I have also tried the * wildcard and get the same response
+    //header("Access-Control-Allow-Credentials: true");
+    //header('Access-Control-Allow-Methods: GET, PUT, POST, DELETE, OPTIONS');
+    header('Access-Control-Allow-Methods: GET, POST');
+    //header('Access-Control-Max-Age: 1000');
+    header('Access-Control-Allow-Headers: Content-Type');
+    header('Content-Type: application/json');
 
 use Zend\Loader\StandardAutoloader;
 use Zend\Json\Server\Server;

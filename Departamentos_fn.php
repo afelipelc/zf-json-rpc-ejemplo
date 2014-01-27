@@ -59,7 +59,8 @@ class Departamentos
 	{
 		$sql = "SELECT * FROM departamentos where id=$idDepto limit 1";
 		$result = $this->db->query($sql)->execute();
-		return array_map('utf8_encode', $result->current());
+		//return array_map('utf8_encode', $result->current());
+		return $result->current();
 	}
 
 	/**
@@ -77,7 +78,7 @@ class Departamentos
 	function RegistrarDepartamento($nombre, $responsable, $cargoResp, $fotoResp, $email, $telefono, $infoAd){
 		if($nombre && $responsable && $telefono)
 		{		
-			$sql = "INSERT into departamentos(nombre, responsable, cargoResp, fotoResp, email, telefono, informacion) values('$nombre','$responsable', '$cargoResp',$fotoResp,'$email','$telefono', '$infoAd')";
+			$sql = "INSERT into departamentos(nombre, responsable, cargoResp, fotoResp, email, telefono, informacion) values('$nombre','$responsable', '$cargoResp', '$fotoResp','$email','$telefono', '$infoAd')";
 			$this->db->query($sql, Adapter::QUERY_MODE_EXECUTE);
 			$id = $this->db->getDriver()->getLastGeneratedValue();
 
@@ -97,13 +98,13 @@ class Departamentos
 	 * @param string
 	 * @param string
 	 * @param string
-	 * @param string
 	 * @return Departamento
 	*/
-	function ActualizarDepartamento($idDepto, $nombre, $responsable, $cargoResp, $fotoResp, $email, $telefono, $infoAd){
+	function ActualizarDepartamento($idDepto, $nombre, $responsable, $cargoResp, $email, $telefono, $infoAd){
+
 		if($idDepto && $idDepto > 0 && $nombre && $responsable && $telefono)
 		{		
-			$sql = "UPDATE departamentos set nombre = '$nombre', responsable='$responsable', cargoResponsable='$cargoResp', fotoResponsable='$fotoResp', email='$email', telefono='$telefono', informacion='$infoAd' where id=$idDepto limit 1";
+			$sql = "UPDATE departamentos set nombre = '$nombre', responsable='$responsable', cargoResp='$cargoResp', email='$email', telefono='$telefono', informacion='$infoAd' where id=$idDepto limit 1";
 			$result = $this->db->query($sql, Adapter::QUERY_MODE_EXECUTE);
 
 			//devolver el resultado de la accion
@@ -122,6 +123,7 @@ class Departamentos
 	function EliminarDepartamento($idDepto, $confirmar){
 		if($idDepto && $idDepto >0 && $confirmar == true)
 		{
+			
 			$sql = "delete from departamentos where id=$idDepto limit 1";
 			$result = $this->db->query($sql, Adapter::QUERY_MODE_EXECUTE);
 			return $result->getAffectedRows() == 1 ? true : false;
@@ -149,7 +151,8 @@ class Departamentos
 		  $arreglo = array();
 		  foreach ($result as $row)
 		  {
-			$arreglo[] = array_map('utf8_encode', $row);
+			//$arreglo[] = array_map('utf8_encode', $row);
+			$arreglo[] = $row;
 		  }
 		  return $arreglo;
 	}
