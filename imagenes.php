@@ -73,7 +73,7 @@ class ProcesarFotos
 			$dotIndex = strrpos($file['foto']['name'], ".");
 			$nombreimg = $nombreimg.substr($file['foto']['name'], $dotIndex);
 			
-			//$this->EliminarFotos($idDepto);
+			$this->EliminarFotos($idDepto);
 
 			//if(move_uploaded_file($file['foto']['tmp_name'], $uploaddir.$file['foto']['name']))
 			if(move_uploaded_file($file['foto']['tmp_name'], $this->uploaddir.$nombreimg))
@@ -82,6 +82,8 @@ class ProcesarFotos
 				$sql = "UPDATE departamentos set fotoResp = '$nombreimg' where id=$idDepto limit 1";
 				$result = $this->db->query($sql, Adapter::QUERY_MODE_EXECUTE);
 
+				unset($_FILES);
+				unset($file);
 				//devolver el resultado de la accion
 				if ($result->getAffectedRows() == 1){
 					return "{\"status\":\"ok\",\"done\":true,\"imagen\":\"".$nombreimg."\"}";
@@ -101,8 +103,10 @@ class ProcesarFotos
 
 	function EliminarFotos($idDepto){
 			//unlink($uploaddir.$imagen);
-		foreach(glob($this->uploaddir.$idDepto_.'*.*') as $file){
-     		unlink($file);
+		foreach(glob($this->uploaddir.'*.*') as $file){
+     		if(substr_count($file, "/".$idDepto."_")){
+     			unlink($file);
+     		}
 		}
 	}
 

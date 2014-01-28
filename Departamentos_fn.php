@@ -43,7 +43,7 @@ class Departamentos
 	*/
 	function Departamentos()
 	{
-		mysqli_set_charset('utf8');
+		//mysqli_set_charset('utf8');
 		$result = $this->db->query('SELECT * FROM departamentos')->execute();
 		return $this->ConvertirArray($result);
 
