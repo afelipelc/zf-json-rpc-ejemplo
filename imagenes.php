@@ -3,6 +3,9 @@
     header('Access-Control-Allow-Methods: GET, POST');
     header('Access-Control-Allow-Headers: Content-Type');
     header('Content-Type: application/json charset=utf-8');
+ob_end_clean();
+ header("Connection: close");
+ ob_start();
 
 //incluir los espacios de nombres de las clases de ZF2 a utilizar
 use Zend\Loader\StandardAutoloader;
@@ -21,12 +24,22 @@ $loader->register();
 if(isset($_GET['idDepartamento'])){
 	$procesarFotos = new ProcesarFotos();
 	echo $procesarFotos->GuardarFoto($_GET['idDepartamento'],$_FILES);
+	unset($procesarFotos);
 	return;
 	
 }else
 {
 	echo "{\"status\":\"error\",\"done\":false}";
 }
+
+unset($_FILES);
+
+$size = ob_get_length();
+ header("Content-Length: $size");
+ ob_end_flush(); // Strange behaviour, will not work
+ flush();            // Unless both are called !
+ // Do processing here 
+ sleep(30);
 
 /**
 * Clase para procesar las imagenes, se almacena en archivo y se actualiza la BD
@@ -82,7 +95,7 @@ class ProcesarFotos
 				$sql = "UPDATE departamentos set fotoResp = '$nombreimg' where id=$idDepto limit 1";
 				$result = $this->db->query($sql, Adapter::QUERY_MODE_EXECUTE);
 
-				unset($_FILES);
+				//chmod($this->uploaddir.$nombreimg, 777);
 				unset($file);
 				//devolver el resultado de la accion
 				if ($result->getAffectedRows() == 1){

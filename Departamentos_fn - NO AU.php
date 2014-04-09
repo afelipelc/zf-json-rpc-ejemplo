@@ -16,15 +16,16 @@ $loader->register();
 
 //incluir la clase Modelo
 require_once('Departamento.php');
-require_once('Response.php');
+
 
 class Departamentos
 {
 	private $db;
-	private $configDB;
+
 	function __construct()
 	{
-		$this->configDB = array(
+		//inicializar el Adapter
+		$this->db = new Adapter(array(
 		'driver' => 'Mysqli',
 		'host'     => '127.0.0.1',
 		'username' => 'afelipe',
@@ -32,65 +33,8 @@ class Departamentos
 		'dbname'   => 'departamentos',
 		'driver_options' => array(
         PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8')
-		);
-		//inicializar el Adapter
-		$this->db = new Adapter($this->configDB);
+		));
 	}
-
-
-
-	/**
-	 * Validar usuario y contraseña
-	 *
-	 * @param string
-	 * @param string
-	 * @return Usuario
-	*/
-	function Login($userName, $password){
-		try {
-			$sql = "SELECT id, usuario FROM usuarios where usuario='$userName' and pwd=Password('$password') limit 1";
-			$result = $this->db->query($sql)->execute();
-			//return array_map('utf8_encode', $result->current());
-			$row =  $result->current();
-			mysql_free_result($result);
-			//$this->db->close();
-			if($row['id'] > 0 && $row['usuario'] != ""){
-				//genera Token
-				$tokenKey = $row['usuario'].$row['id']."";
-				$sql = "UPDATE usuarios set fechalogin = now(), token = SHA1('$tokenKey') where id=".$row['id']." limit 1";
-
-				$this->db = new Adapter($this->configDB);
-				$result = $this->db->query($sql, Adapter::QUERY_MODE_EXECUTE);
-
-				//devolver el resultado de la accion
-				if($result->getAffectedRows() == 1)
-				{
-					mysql_free_result($result);
-					//$adapter->close();
-					$this->db = new Adapter($this->configDB);
-					$sql = "SELECT id, usuario, token FROM usuarios where usuario='$userName' and pwd=Password('$password') limit 1";
-					$result = $this->db->query($sql)->execute();
-					return $result->current();
-				}else
-				{
-					$error = new ErrorResponse(true,"No se pudo autenticar a usuario: " .$userName);
-					//return "{\"error\":true,\"message\":\"No se pudo autenticar a usuario: $userName\"";
-					return $error;
-				}
-			}else
-			{
-				//return "{\"error\":true,\"message\":\"Datos de sesion incorrectos\"";
-				//return "Datos invalidos";
-				$error = new ErrorResponse(true,"Datos de sesion incorrectos.");
-				return $error;
-			}
-		} catch (Exception $_e) {
-    	$error = new ErrorResponse(true,"Error interno en el servidor: ");
-				//return "{\"error\":true,\"message\":\"No se pudo autenticar a usuario: $userName\"";
-				return $error;
-		}
-	}
-
 
 	/**
 	 * Lista de todos los departamentos registrados
@@ -128,15 +72,9 @@ class Departamentos
 	 * @param string
 	 * @param string
 	 * @param string
-	 * @param string
-	 * @param string
 	 * @return Departamento
 	*/
-	function RegistrarDepartamento($nombre, $responsable, $cargoResp, $email, $telefono, $infoAd, $usuario, $token){
-		//antes de registrar, validar token
-		if(!$this->validaToken($usuario, $token))
-			return new ErrorResponse(true,"Sesión no válida");
-
+	function RegistrarDepartamento($nombre, $responsable, $cargoResp, $email, $telefono, $infoAd){
 		if($nombre && $responsable && $telefono)
 		{		
 			$sql = "INSERT into departamentos(nombre, responsable, cargoResp, fotoResp, email, telefono, informacion) values('$nombre','$responsable', '$cargoResp', '','$email','$telefono', '$infoAd')";
@@ -159,14 +97,9 @@ class Departamentos
 	 * @param string
 	 * @param string
 	 * @param string
-	 * @param string
-	 * @param string
-	 * @return ErrorResponse
+	 * @return boolean
 	*/
-	function ActualizarDepartamento($idDepto, $nombre, $responsable, $cargoResp, $email, $telefono, $infoAd, $usuario, $token){
-
-		if(!$this->validaToken($usuario, $token))
-			return new ErrorResponse(true,"Sesión no válida");
+	function ActualizarDepartamento($idDepto, $nombre, $responsable, $cargoResp, $email, $telefono, $infoAd){
 
 		if($idDepto && $idDepto > 0 && $nombre && $responsable && $telefono)
 		{		
@@ -184,21 +117,15 @@ class Departamentos
 	 *
 	 * @param integer
 	 * @param boolean
-	 * @param string
-	 * @param string
-	 * @return ErrorResponse
+	 * @return boolean
 	*/
-	function EliminarDepartamento($idDepto, $confirmar, $usuario, $token){
-		if(!$this->validaToken($usuario, $token))
-			return new ErrorResponse(false,"Sesión no válida");
-
+	function EliminarDepartamento($idDepto, $confirmar){
 		if($idDepto && $idDepto >0 && $confirmar == true)
 		{
 			
 			$sql = "delete from departamentos where id=$idDepto limit 1";
 			$result = $this->db->query($sql, Adapter::QUERY_MODE_EXECUTE);
-			//return $result->getAffectedRows() == 1 ? true : false;
-			return new ErrorResponse(true,"Se ha eliminado el departemento");
+			return $result->getAffectedRows() == 1 ? true : false;
 		}
 	}
 
@@ -227,22 +154,6 @@ class Departamentos
 			$arreglo[] = $row;
 		  }
 		  return $arreglo;
-	}
-
-	//funcion para validar la clave proporcionada
-	private function validaToken($userName, $token){
-		//tomar el token y verificar que sea el que tiene
-		//el usuario en la tabla
-		$adapter = new Adapter($this->configDB);
-		$sql = "SELECT id, usuario from usuarios where usuario='$userName' and token='$token'";
-
-		$result = $adapter->query($sql)->execute();
-		$row = $result->current();
-		mysql_free_result($result);
-		if($row["id"] > 0 && $row["usuario"] != "")
-			return true;
-		else
-			return false;
 	}
 }
 ?>
