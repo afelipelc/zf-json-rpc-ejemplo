@@ -26,9 +26,9 @@ class Departamentos
 	{
 		$this->configDB = array(
 		'driver' => 'Mysqli',
-		'host'     => '127.0.0.1',
-		'username' => 'afelipe',
-		'password' => 'asdf123',
+		'host'     => 'localhost',
+		'username' => 'root',
+		'password' => '',
 		'dbname'   => 'departamentos',
 		'driver_options' => array(
         PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8')
