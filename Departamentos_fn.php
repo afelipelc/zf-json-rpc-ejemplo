@@ -27,8 +27,8 @@ class Departamentos
 		$this->configDB = array(
 		'driver' => 'Mysqli',
 		'host'     => 'localhost',
-		'username' => 'root',
-		'password' => '',
+		'username' => 'afelipe',
+		'password' => 'asdf123',
 		'dbname'   => 'departamentos',
 		'driver_options' => array(
         PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8')
@@ -73,21 +73,20 @@ class Departamentos
 					return $result->current();
 				}else
 				{
-					$error = new ErrorResponse(true,"No se pudo autenticar a usuario: " .$userName);
+					return new MyResponse(true,true,"No se pudo autenticar a usuario: ".$userName);
 					//return "{\"error\":true,\"message\":\"No se pudo autenticar a usuario: $userName\"";
-					return $error;
+					//return $error;
 				}
 			}else
 			{
 				//return "{\"error\":true,\"message\":\"Datos de sesion incorrectos\"";
 				//return "Datos invalidos";
-				$error = new ErrorResponse(true,"Datos de sesion incorrectos.");
-				return $error;
+				return new MyResponse(true,true,"Datos de sesion incorrectos.");
+				//return $error;
 			}
 		} catch (Exception $_e) {
-    	$error = new ErrorResponse(true,"Error interno en el servidor: ");
+    	return new MyResponse(false,true,"Error interno en el servidor: ");
 				//return "{\"error\":true,\"message\":\"No se pudo autenticar a usuario: $userName\"";
-				return $error;
 		}
 	}
 
@@ -135,7 +134,7 @@ class Departamentos
 	function RegistrarDepartamento($nombre, $responsable, $cargoResp, $email, $telefono, $infoAd, $usuario, $token){
 		//antes de registrar, validar token
 		if(!$this->validaToken($usuario, $token))
-			return new ErrorResponse(true,"Sesión no válida");
+			return new MyResponse(false,true,"Sesión no válida");
 
 		if($nombre && $responsable && $telefono)
 		{		
@@ -146,7 +145,7 @@ class Departamentos
 			//devolver el objeto registrado
 			return $this->DatosDepartamento($id);
 		}else
-			return null;
+			return new MyResponse(false,true,"No se recibieron datos a procesar");
 	}
 
 	/**
@@ -161,12 +160,12 @@ class Departamentos
 	 * @param string
 	 * @param string
 	 * @param string
-	 * @return ErrorResponse
+	 * @return Object
 	*/
 	function ActualizarDepartamento($idDepto, $nombre, $responsable, $cargoResp, $email, $telefono, $infoAd, $usuario, $token){
 
 		if(!$this->validaToken($usuario, $token))
-			return new ErrorResponse(true,"Sesión no válida");
+			return new MyResponse(false,true,"Sesión no válida");
 
 		if($idDepto && $idDepto > 0 && $nombre && $responsable && $telefono)
 		{		
@@ -174,9 +173,14 @@ class Departamentos
 			$result = $this->db->query($sql, Adapter::QUERY_MODE_EXECUTE);
 
 			//devolver el resultado de la accion
-			return ($result->getAffectedRows() == 1) ? true : false;
+			$actualizado = $result->getAffectedRows() == 1 ? true : false;
+
+			if($actualizado)
+				return new MyResponse(true,false,"Datos actualizados");
+			else
+				return new MyResponse(false,false,"Los datos no se actualizaron, esto sucede si los datos son los mismos que los alamacenados");
 		}else
-			return false;
+			new MyResponse(false,true,"Sesión no válida");
 	}
 
 	/**
@@ -190,15 +194,16 @@ class Departamentos
 	*/
 	function EliminarDepartamento($idDepto, $confirmar, $usuario, $token){
 		if(!$this->validaToken($usuario, $token))
-			return new ErrorResponse(false,"Sesión no válida");
+			return new MyResponse(false,true,"Sesión no válida");
 
-		if($idDepto && $idDepto >0 && $confirmar == true)
+		if($idDepto && $idDepto > 0 && $confirmar == true)
 		{
-			
 			$sql = "delete from departamentos where id=$idDepto limit 1";
 			$result = $this->db->query($sql, Adapter::QUERY_MODE_EXECUTE);
 			//return $result->getAffectedRows() == 1 ? true : false;
-			return new ErrorResponse(true,"Se ha eliminado el departemento");
+			return new MyResponse(true, false,"Se ha eliminado el departemento");
+		}else{
+			return new MyResponse(false, true,"No se recibieron datos.");
 		}
 	}
 
